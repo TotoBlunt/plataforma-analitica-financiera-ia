@@ -80,8 +80,8 @@ def generar_resumen_ia(df_filtrado, model):
         return f"""
 ### 📊 Diagnóstico Financiero Analítico (Modo Offline / Demo)
 
-* **Volumen Total:** Se registraron **${gasto_total:,.2f}** distribuidos en **{len(df_filtrado)}** movimientos con un ticket promedio de **${promedio_transaccion:,.2f}**.
-* **Mayor Concentración:** La categoría **{cat_top}** absorbe el **{pct_top:.1f}%** del presupuesto del período (${monto_top:,.2f}).
+* **Volumen Total:** Se registraron **S/{gasto_total:,.2f}** distribuidos en **{len(df_filtrado)}** movimientos con un ticket promedio de **S/{promedio_transaccion:,.2f}**.
+* **Mayor Concentración:** La categoría **{cat_top}** absorbe el **{pct_top:.1f}%** del presupuesto del período (S/{monto_top:,.2f}).
 * **Oportunidad de Eficiencia:** Diversificar o auditar las subcategorías de `{cat_top}` para verificar si corresponden a gastos fijos no negociables o gastos discrecionales.
 
 *(💡 Para resúmenes generados con lenguaje natural conversacional, activa tu Google Gemini API Key).*
@@ -90,9 +90,9 @@ def generar_resumen_ia(df_filtrado, model):
     prompt = f"""
     Actúa como un asesor y analista financiero personal senior para una pareja/hogar. 
     Analiza con rigor y empatía estos datos consolidados:
-    - Gasto Total: ${gasto_total:,.2f}
-    - Ticket promedio por transacción: ${promedio_transaccion:,.2f}
-    - Categoría con mayor peso: '{cat_top}' (${monto_top:,.2f}, {pct_top:.1f}% del total).
+    - Gasto Total: S/{gasto_total:,.2f}
+    - Ticket promedio por transacción: S/{promedio_transaccion:,.2f}
+    - Categoría con mayor peso: '{cat_top}' (S/{monto_top:,.2f}, {pct_top:.1f}% del total).
     - Desglose por categoría:
     {gastos_por_cat.to_string()}
 
@@ -135,7 +135,7 @@ def generar_insights_proactivos(df, ia_model):
         dia_max = gasto_dia.index[0]
         monto_dia_max = gasto_dia.iloc[0]
         pct_dia = (monto_dia_max / gasto_total) * 100 if gasto_total > 0 else 0
-        insights_calculados.append(f"📅 El día de mayor desembolso suele ser el **{dia_max}** acumulando ${monto_dia_max:,.2f} ({pct_dia:.1f}% del total).")
+        insights_calculados.append(f"📅 El día de mayor desembolso suele ser el **{dia_max}** acumulando S/{monto_dia_max:,.2f} ({pct_dia:.1f}% del total).")
 
     # 2. Concentración por categoría
     gastos_cat = df.groupby('Categoria')['Monto'].sum().sort_values(ascending=False)
@@ -153,7 +153,7 @@ def generar_insights_proactivos(df, ia_model):
     if not outliers.empty:
         top_outlier = outliers.sort_values(by='Monto', ascending=False).iloc[0]
         insights_calculados.append(
-            f"⚠️ Transacción atípica detectada: **{top_outlier['Descripcion']}** (${top_outlier['Monto']:,.2f}) en {top_outlier['Categoria']} supera el umbral IQR."
+            f"⚠️ Transacción atípica detectada: **{top_outlier['Descripcion']}** (S/{top_outlier['Monto']:,.2f}) en {top_outlier['Categoria']} supera el umbral IQR."
         )
     else:
         # Alternativa: proporción fija vs variable
