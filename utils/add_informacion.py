@@ -5,36 +5,23 @@ import gspread
 
 logger = logging.getLogger(__name__)
 
+# ==============================================================================
+# GESTIÓN DE GASTOS
+# ==============================================================================
 def ingresar_gasto(worksheet, fecha, monto, descripcion, persona, categoria, subcategoria, tipo_gasto, notas):
     """
     Ingresa una nueva fila de gasto en la hoja de cálculo especificada.
-
-    Args:
-        worksheet (gspread.Worksheet): Objeto de hoja de cálculo donde se insertarán los datos.
-        fecha (datetime.date): Fecha del gasto.
-        monto (float): Monto numérico del gasto.
-        descripcion (str): Detalle del gasto.
-        persona (str): Persona que efectuó el pago.
-        categoria (str): Categoría del gasto.
-        subcategoria (str): Subcategoría opcional.
-        tipo_gasto (str): Fijo, Variable, etc.
-        notas (str): Observaciones adicionales.
-
-    Returns:
-        tuple: (bool, str) indicando éxito y mensaje descriptivo.
     """
     if worksheet is None:
-        return (False, "No hay conexión activa a la hoja de cálculo (Modo Demostración activo o sin conexión).")
+        return (False, "No hay conexión activa a la hoja de cálculo.")
 
     try:
-        # Validación de datos
         if not descripcion or str(descripcion).strip() == "":
             return (False, "La descripción no puede estar vacía.")
 
         if monto is None or float(monto) <= 0:
             return (False, "El monto debe ser un valor positivo mayor a 0.")
 
-        # Generación de ID único y fecha formateada
         id_gasto = f"G-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4]}"
         fecha_str = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)
 
@@ -55,7 +42,7 @@ def ingresar_gasto(worksheet, fecha, monto, descripcion, persona, categoria, sub
 
     except Exception as e:
         logger.error(f"Error al ingresar gasto en Google Sheets: {e}")
-        return (False, "No se pudo guardar el gasto. Verifique los permisos de la hoja o su conexión de red.")
+        return (False, "No se pudo guardar el gasto. Verifique permisos o conexión.")
 
 def eliminar_gasto(worksheet, id_gasto):
     """
@@ -70,11 +57,11 @@ def eliminar_gasto(worksheet, id_gasto):
             return (False, f"No se encontró el registro con ID {id_gasto}.")
 
         worksheet.delete_rows(cell.row)
-        return (True, f"Registro eliminado exitosamente.")
+        return (True, "Registro eliminado exitosamente.")
 
     except Exception as e:
         logger.error(f"Error al eliminar gasto con ID {id_gasto}: {e}")
-        return (False, "No se pudo eliminar el gasto. Ocurrió un error de comunicación.")
+        return (False, "No se pudo eliminar el gasto.")
 
 def editar_gasto(worksheet, id_gasto, nuevos_datos):
     """
@@ -100,10 +87,66 @@ def editar_gasto(worksheet, id_gasto, nuevos_datos):
 
         if celdas_a_actualizar:
             worksheet.update_cells(celdas_a_actualizar, value_input_option='USER_ENTERED')
-            return (True, f"Gasto actualizado exitosamente.")
+            return (True, "Gasto actualizado exitosamente.")
         else:
             return (False, "No se suministraron campos válidos para actualizar.")
 
     except Exception as e:
         logger.error(f"Error al editar gasto con ID {id_gasto}: {e}")
         return (False, "No se pudieron guardar las modificaciones del gasto.")
+
+# ==============================================================================
+# GESTIÓN DE INGRESOS
+# ==============================================================================
+def ingresar_ingreso(worksheet, fecha, monto, descripcion, persona, categoria):
+    """
+    Ingresa una nueva fila de ingreso en la hoja de cálculo de Ingresos.
+    Columnas: ID_Ingreso, Fecha, Monto, Descripcion, Persona, Categoria
+    """
+    if worksheet is None:
+        return (False, "No hay conexión activa a la hoja de cálculo de Ingresos.")
+
+    try:
+        if not descripcion or str(descripcion).strip() == "":
+            return (False, "La descripción del ingreso no puede estar vacía.")
+
+        if monto is None or float(monto) <= 0:
+            return (False, "El monto del ingreso debe ser mayor a 0.")
+
+        id_ingreso = f"ING-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4]}"
+        fecha_str = fecha.strftime("%Y-%m-%d") if hasattr(fecha, "strftime") else str(fecha)
+
+        nueva_fila = [
+            id_ingreso,
+            fecha_str,
+            float(monto),
+            str(descripcion).strip(),
+            str(persona),
+            str(categoria or "Sueldo Fijo")
+        ]
+
+        worksheet.append_row(nueva_fila)
+        return (True, "¡Ingreso registrado exitosamente!")
+
+    except Exception as e:
+        logger.error(f"Error al ingresar entrada de ingreso en Google Sheets: {e}")
+        return (False, "No se pudo registrar el ingreso. Verifique la conexión.")
+
+def eliminar_ingreso(worksheet, id_ingreso):
+    """
+    Elimina un ingreso por su ID_Ingreso.
+    """
+    if worksheet is None:
+        return (False, "No hay conexión activa a la hoja de cálculo de Ingresos.")
+
+    try:
+        cell = worksheet.find(str(id_ingreso), in_column=1)
+        if cell is None:
+            return (False, f"No se encontró el ingreso con ID {id_ingreso}.")
+
+        worksheet.delete_rows(cell.row)
+        return (True, "Ingreso eliminado exitosamente.")
+
+    except Exception as e:
+        logger.error(f"Error al eliminar ingreso con ID {id_ingreso}: {e}")
+        return (False, "No se pudo eliminar el ingreso.")

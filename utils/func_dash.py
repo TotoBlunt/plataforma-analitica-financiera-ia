@@ -9,6 +9,9 @@ import plotly.graph_objects as go
 # ==============================================================================
 def aplicar_filtros(df, persona, fechas, categorias):
     """Filtra el DataFrame según las selecciones del usuario en la barra lateral."""
+    if df.empty:
+        return df
+
     df_filtrado = df.copy()
 
     # Filtro de fecha
@@ -21,21 +24,116 @@ def aplicar_filtros(df, persona, fechas, categorias):
     if persona != "Ambos" and 'Persona' in df_filtrado.columns:
         df_filtrado = df_filtrado[df_filtrado['Persona'] == persona]
 
-    # Filtro de categoría
-    if "Todas" not in categorias and 'Categoria' in df_filtrado.columns:
+    # Filtro de categoría (solo si aplica)
+    if categorias and "Todas" not in categorias and 'Categoria' in df_filtrado.columns:
         df_filtrado = df_filtrado[df_filtrado['Categoria'].isin(categorias)]
 
     return df_filtrado
 
 # ==============================================================================
-# 2. MÉTRICAS CLAVE Y KPIs FINANCIEROS (MoM, Burn Rate, etc.)
+# 2. BALANCE GENERAL: INGRESOS VS GASTOS (SEMÁFORO ROJO / VERDE)
+# ==============================================================================
+def mostrar_balance_financiero(df_gastos, df_ingresos):
+    """
+    Presenta el Balance Financiero Consolidado (Cash Flow):
+    - Ingresos Totales
+    - Gastos Totales
+    - Balance Neto (Superávit en Verde 🟢 vs Déficit en Rojo 🔴)
+    - Tasa de Ahorro Real (%)
+    - Gráfico Waterfall de Flujo de Caja
+    """
+    st.subheader("💵 Balance de Flujo de Caja (Ingresos vs. Gastos)")
+
+    total_ingresos = df_ingresos['Monto'].sum() if not df_ingresos.empty else 0.0
+    total_gastos = df_gastos['Monto'].sum() if not df_gastos.empty else 0.0
+    balance_neto = total_ingresos - total_gastos
+
+    if total_ingresos > 0:
+        tasa_ahorro = (balance_neto / total_ingresos) * 100
+    else:
+        tasa_ahorro = 0.0
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        st.metric(
+            label="💰 Ingresos del Período",
+            value=f"S/ {total_ingresos:,.2f}"
+        )
+
+    with c2:
+        st.metric(
+            label="💸 Gastos del Período",
+            value=f"S/ {total_gastos:,.2f}"
+        )
+
+    with c3:
+        if balance_neto >= 0:
+            st.metric(
+                label="⚖️ Flujo Neto (Superávit)",
+                value=f"S/ {balance_neto:,.2f}",
+                delta=f"🟢 En Verde (+{tasa_ahorro:.1f}% remanente)",
+                delta_color="normal"
+            )
+        else:
+            st.metric(
+                label="⚖️ Flujo Neto (Déficit)",
+                value=f"-S/ {abs(balance_neto):,.2f}",
+                delta=f"🔴 En Rojo ({tasa_ahorro:.1f}% sobregiro)",
+                delta_color="inverse"
+            )
+
+    with c4:
+        st.metric(
+            label="📈 Tasa de Ahorro Real",
+            value=f"{tasa_ahorro:.1f}%",
+            delta="Meta sugerida: ≥ 20%",
+            delta_color="off"
+        )
+
+    # Alerta contextual de estado
+    if total_ingresos > 0:
+        if balance_neto > 0:
+            st.success(f"🟢 **Superávit Financiero:** Los ingresos superan los gastos por **S/ {balance_neto:,.2f}**. Tu tasa de ahorro es del **{tasa_ahorro:.1f}%**.")
+        elif balance_neto == 0:
+            st.info("🟡 **Punto de Equilibrio:** Los ingresos igualan exactamente los gastos del período.")
+        else:
+            st.error(f"🔴 **Alerta de Déficit Presupuestario:** Los gastos superan los ingresos en **S/ {abs(balance_neto):,.2f}**. Se recomienda auditar gastos discrecionales.")
+
+    # Gráfico de Cascada (Waterfall Chart) de Flujo de Caja
+    if total_ingresos > 0 or total_gastos > 0:
+        with st.expander("📊 Ver Cascada de Flujo de Caja (Waterfall Chart)", expanded=False):
+            fig_wf = go.Figure(go.Waterfall(
+                name="Flujo de Caja",
+                orientation="v",
+                measure=["relative", "relative", "total"],
+                x=["Ingresos Totales", "Gastos Totales", "Balance Remanente"],
+                textposition="outside",
+                text=[f"+S/ {total_ingresos:,.2f}", f"-S/ {total_gastos:,.2f}", f"S/ {balance_neto:,.2f}"],
+                y=[total_ingresos, -total_gastos, balance_neto],
+                connector={"line": {"color": "rgb(63, 63, 63)"}},
+                increasing={"marker": {"color": "#10b981"}},
+                decreasing={"marker": {"color": "#ef4444"}},
+                totals={"marker": {"color": "#3b82f6" if balance_neto >= 0 else "#dc2626"}}
+            ))
+
+            fig_wf.update_layout(
+                title="Descomposición del Flujo de Caja del Período",
+                waterfallgap=0.3,
+                height=320,
+                margin=dict(t=40, b=10, l=10, r=10)
+            )
+            st.plotly_chart(fig_wf, use_container_width=True)
+
+# ==============================================================================
+# 3. MÉTRICAS CLAVE Y KPIs DE GASTOS (MoM, Burn Rate, etc.)
 # ==============================================================================
 def mostrar_metricas_clave(df_filtrado, df_referencia=None):
     """
     Presenta KPIs financieros ejecutivos incluyendo variación intermensual (MoM),
     gasto diario promedio (Burn Rate) y ticket medio.
     """
-    st.subheader("📊 Resumen Ejecutivo del Período")
+    st.subheader("📊 Análisis de Dinámica de Gastos")
 
     if df_filtrado.empty:
         st.info("Sin registros para el filtro seleccionado.")
@@ -45,18 +143,15 @@ def mostrar_metricas_clave(df_filtrado, df_referencia=None):
     num_transacciones = len(df_filtrado)
     ticket_promedio = df_filtrado['Monto'].mean() if num_transacciones > 0 else 0
 
-    # Rango en días para calcular burn rate diario
     dias_periodo = (df_filtrado['Fecha'].max() - df_filtrado['Fecha'].min()).days + 1
     dias_periodo = max(dias_periodo, 1)
     gasto_diario_promedio = total_gastado / dias_periodo
 
-    # Cálculo de Variación MoM (Month over Month)
     delta_mom_str = None
     delta_mom_color = "normal"
     df_base = df_referencia if df_referencia is not None and not df_referencia.empty else df_filtrado
 
     try:
-        # Agrupar por Periodo Año-Mes
         df_temp = df_base.copy()
         df_temp['Periodo'] = df_temp['Fecha'].dt.to_period('M')
         gastos_mensuales = df_temp.groupby('Periodo')['Monto'].sum().sort_index()
@@ -67,7 +162,6 @@ def mostrar_metricas_clave(df_filtrado, df_referencia=None):
             if mes_previo > 0:
                 variacion_pct = ((mes_actual - mes_previo) / mes_previo) * 100
                 delta_mom_str = f"{variacion_pct:+.1f}% vs mes anterior"
-                # En finanzas personales: si el gasto baja (negativo) es favorable (verde)
                 delta_mom_color = "inverse"
     except Exception:
         pass
@@ -97,7 +191,7 @@ def mostrar_metricas_clave(df_filtrado, df_referencia=None):
         )
 
 # ==============================================================================
-# 3. ANÁLISIS DE LA REGLA 50 / 30 / 20
+# 4. ANÁLISIS DE LA REGLA 50 / 30 / 20
 # ==============================================================================
 def mostrar_kpis_regla_50_30_20(df):
     """
@@ -109,7 +203,6 @@ def mostrar_kpis_regla_50_30_20(df):
     if df.empty:
         return
 
-    # Mapeo configurable de categorías a pilares 50/30/20
     mapa_pilares = {
         'Hogar': 'Necesidades (50%)',
         'Comida': 'Necesidades (50%)',
@@ -138,7 +231,7 @@ def mostrar_kpis_regla_50_30_20(df):
     pct_deseos = (resumen_pilares.get('Deseos (30%)', 0) / total) * 100
     pct_ahorro = (resumen_pilares.get('Ahorro / Futuro (20%)', 0) / total) * 100
 
-    with st.expander("⚖️ Diagnóstico de Distribución Financiera (Regla 50 / 30 / 20)", expanded=False):
+    with st.expander("⚖️ Diagnóstico de Distribución de Gastos (Regla 50 / 30 / 20)", expanded=False):
         st.markdown(
             """
             El modelo **50/30/20** es el estándar de salud financiera personal:
@@ -168,7 +261,6 @@ def mostrar_kpis_regla_50_30_20(df):
             delta_color="normal"
         )
 
-        # Gráfico comparativo de barras apiladas
         fig_pilar = go.Figure()
         fig_pilar.add_trace(go.Bar(
             name='Tu Distribución Real',
@@ -209,7 +301,7 @@ def mostrar_kpis_regla_50_30_20(df):
         st.plotly_chart(fig_pilar, use_container_width=True)
 
 # ==============================================================================
-# 4. VISUALIZACIONES PRINCIPALES (Donut, Evolución, Comparativa, Treemap)
+# 5. VISUALIZACIONES PRINCIPALES (Donut, Evolución, Comparativa, Treemap)
 # ==============================================================================
 def graficar_distribucion_categoria(df):
     """Muestra un Donut Chart elegante y tabla de concentración por categoría."""
@@ -256,13 +348,11 @@ def graficar_evolucion_temporal(df):
     gastos_diarios['Fecha'] = pd.to_datetime(gastos_diarios['Fecha'])
     gastos_diarios.sort_values(by='Fecha', inplace=True)
 
-    # Calcular Media Móvil a 7 días
     gastos_diarios['Media_Movil_7D'] = gastos_diarios['Monto_Diario'].rolling(window=7, min_periods=1).mean()
     gastos_diarios['Gasto_Acumulado'] = gastos_diarios['Monto_Diario'].cumsum()
 
     fig = go.Figure()
 
-    # Barras de gasto diario
     fig.add_trace(go.Bar(
         x=gastos_diarios['Fecha'],
         y=gastos_diarios['Monto_Diario'],
@@ -272,7 +362,6 @@ def graficar_evolucion_temporal(df):
         hovertemplate='Fecha: %{x|%d/%m/%Y}<br>Gasto Diario: S/ %{y:,.2f}<extra></extra>'
     ))
 
-    # Línea de media móvil
     fig.add_trace(go.Scatter(
         x=gastos_diarios['Fecha'],
         y=gastos_diarios['Media_Movil_7D'],
@@ -342,9 +431,9 @@ def graficar_detalle_subcategoria(df):
         st.info("No hay subcategorías registradas para el filtro seleccionado.")
 
 # ==============================================================================
-# 5. TABLA DE DATOS ANALÍTICA CON DESCARGA
+# 6. TABLA DE DATOS ANALÍTICA CON DESCARGA
 # ==============================================================================
-def mostrar_tabla_detallada(df):
+def mostrar_tabla_detallada(df, nombre_archivo="gastos_filtrados.csv"):
     """Muestra la tabla analítica con ordenamiento, formato y opción de exportación CSV."""
     st.write("#### 📄 Registros Analíticos del Período")
     if df.empty:
@@ -361,11 +450,10 @@ def mostrar_tabla_detallada(df):
         st.download_button(
             label="📥 Exportar datos a CSV",
             data=csv_data,
-            file_name="gastos_filtrados.csv",
+            file_name=nombre_archivo,
             mime="text/csv"
         )
 
-    # Formato visual para mostrar
     df_mostrar = df_display.copy()
     df_mostrar['Fecha'] = df_mostrar['Fecha'].dt.strftime('%d/%m/%Y')
     df_mostrar['Monto'] = df_mostrar['Monto'].map(lambda x: f"S/ {x:,.2f}")

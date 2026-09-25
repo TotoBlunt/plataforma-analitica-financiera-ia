@@ -6,7 +6,8 @@ import streamlit as st
 logger = logging.getLogger(__name__)
 
 DEFAULT_SPREADSHEET = "FinanzasFamiliares"
-DEFAULT_WORKSHEET = "Hoja 1"
+DEFAULT_WORKSHEET_GASTOS = "Hoja 1"
+DEFAULT_WORKSHEET_INGRESOS = "Ingresos"
 
 def conexion_gsheet_produccion():
     """
@@ -14,12 +15,11 @@ def conexion_gsheet_produccion():
     mediante el cliente moderno de gspread y google-auth.
     """
     try:
-        if "gcp_service_account" not in st.secrets:
+        if not hasattr(st, "secrets") or "gcp_service_account" not in st.secrets:
             logger.warning("Sección [gcp_service_account] no encontrada en st.secrets.")
             return None
 
         creds_dict = dict(st.secrets["gcp_service_account"])
-        # gspread.service_account_from_dict utiliza internamente google-auth (sin oauth2client obsoleto)
         client = gspread.service_account_from_dict(creds_dict)
         return client
 
@@ -30,15 +30,13 @@ def conexion_gsheet_produccion():
 def abrir_hoja(client, sheet_name=None, worksheet_name=None):
     """
     Abre una hoja de cálculo específica y devuelve el objeto Worksheet.
-    Permite configuración personalizada desde st.secrets o parámetros.
     """
     if client is None:
         return None
 
-    # Obtener nombres desde configuración opcional o defaults
     cfg = st.secrets.get("app_config", {}) if hasattr(st, "secrets") else {}
     target_sheet = sheet_name or cfg.get("spreadsheet_name", DEFAULT_SPREADSHEET)
-    target_worksheet = worksheet_name or cfg.get("worksheet_name", DEFAULT_WORKSHEET)
+    target_worksheet = worksheet_name or cfg.get("worksheet_name", DEFAULT_WORKSHEET_GASTOS)
 
     try:
         spreadsheet = client.open(target_sheet)
@@ -50,7 +48,7 @@ def abrir_hoja(client, sheet_name=None, worksheet_name=None):
 
 def cargar_datos(worksheet):
     """
-    Carga los datos de la hoja de cálculo en un DataFrame de Pandas con validación de tipos.
+    Carga los datos de gastos de la hoja de cálculo en un DataFrame de Pandas.
     """
     if worksheet is None:
         return pd.DataFrame()
@@ -60,7 +58,6 @@ def cargar_datos(worksheet):
         df = pd.DataFrame(data)
 
         if not df.empty:
-            # Asegurar columnas mínimas requeridas
             columnas_esperadas = ['ID_Gasto', 'Fecha', 'Monto', 'Descripcion', 'Persona', 'Categoria']
             for col in columnas_esperadas:
                 if col not in df.columns:
@@ -74,5 +71,35 @@ def cargar_datos(worksheet):
         return df
 
     except Exception as e:
-        logger.error(f"Error al leer registros de Google Sheets: {e}")
+        logger.error(f"Error al leer registros de gastos en Google Sheets: {e}")
         return pd.DataFrame()
+
+def cargar_ingresos(worksheet):
+    """
+    Carga los datos de ingresos de la hoja de cálculo en un DataFrame de Pandas.
+    """
+    if worksheet is None:
+        return pd.DataFrame()
+
+    try:
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+
+        if not df.empty:
+            columnas_esperadas = ['ID_Ingreso', 'Fecha', 'Monto', 'Descripcion', 'Persona', 'Categoria']
+            for col in columnas_esperadas:
+                if col not in df.columns:
+                    df[col] = ""
+
+            df['Monto'] = pd.to_numeric(df['Monto'], errors='coerce').fillna(0.0)
+            df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
+            df.dropna(subset=['Fecha'], inplace=True)
+            df.sort_values(by="Fecha", ascending=False, inplace=True)
+        else:
+            df = pd.DataFrame(columns=['ID_Ingreso', 'Fecha', 'Monto', 'Descripcion', 'Persona', 'Categoria'])
+
+        return df
+
+    except Exception as e:
+        logger.error(f"Error al leer registros de ingresos en Google Sheets: {e}")
+        return pd.DataFrame(columns=['ID_Ingreso', 'Fecha', 'Monto', 'Descripcion', 'Persona', 'Categoria'])

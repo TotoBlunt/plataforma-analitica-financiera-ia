@@ -37,30 +37,32 @@ Analisis_finanzas_personales/
 ├── .streamlit/
 │   └── secrets.toml.example          # Plantilla segura de configuración de credenciales
 ├── data/
-│   └── demo_finanzas.csv             # Dataset sintético de 1,480 transacciones (Modo Demo)
+│   ├── demo_finanzas.csv             # Dataset sintético de 1,480 gastos (Modo Demo)
+│   └── demo_ingresos.csv             # Dataset sintético de 85 ingresos recurrentes (Modo Demo)
 ├── notebooks/
 │   └── 01_eda_analisis_financiero.ipynb # Análisis estadístico riguroso (Pareto, Outliers, 50/30/20)
 └── utils/
-    ├── conn_Gsheet.py                # Conexión moderna a Google Sheets con google-auth
-    ├── add_informacion.py            # Operaciones transaccionales CRUD con validación estricta
-    ├── func_dash.py                  # Motor de KPIs analíticos y visualizaciones Plotly
+    ├── conn_Gsheet.py                # Conexión moderna a Google Sheets ('Hoja 1' e 'Ingresos')
+    ├── add_informacion.py            # Operaciones CRUD para gastos e ingresos
+    ├── func_dash.py                  # Motor de KPIs, Balance (Superávit/Déficit), Waterfall y Plotly
     └── func_ai.py                    # Integración Gemini AI con sandbox AST y fallback offline
 ```
 
 ### Detalle de Módulos
 
-#### 1. `app.py` (Orquestador Central)
-* **Selector de Fuente de Datos:** Permite alternar en tiempo real entre el **Modo Demostración** (ideal para reclutadores, con 1,480 transacciones listas para explorar) y el **Modo Producción** (Google Sheets en la nube).
-* **Anonimización Dinámica:** Elimina datos personales (PII) hardcodeados, detectando automáticamente los integrantes a partir del dataset.
-* **Flujo Transaccional:** Registro, categorización asistida y edición/depuración en vivo (incluso en memoria de sesión en Modo Demo).
+#### 1. `app.py` (Orquestador Central y Seguridad)
+* **Barrera de Seguridad / PIN de Producción:** El acceso a la base de datos real en Google Sheets está protegido por una pantalla de bloqueo con clave privada (`admin_password`). Los visitantes y evaluadores pueden explorar el **Modo Demostración** sin fricción.
+* **Gestión Dual de Flujo de Caja:** Permite registrar tanto **Gastos** (con categorización asistida por IA) como **Ingresos** (sueldos, bonos, freelance).
+* **Anonimización Dinámica:** Detecta automáticamente los integrantes a partir de los datos sin exponer PII hardcodeada.
 
 #### 2. `utils/func_dash.py` (Capa de Inteligencia y Métricas)
+* `mostrar_balance_financiero()`: Métrica de **Cash Flow Neto** (`Ingresos - Gastos`), **Tasa de Ahorro Real (%)** y semáforo financiero (🟢 Superávit vs. 🔴 Déficit) con **Gráfico Waterfall (Cascada)** interactivo.
 * `mostrar_metricas_clave()`: Cálculo de gasto total con **delta MoM %**, gasto diario promedio (*Burn Rate*), ticket medio y volumen de operaciones.
 * `mostrar_kpis_regla_50_30_20()`: Agrupación analítica de categorías en *Necesidades*, *Deseos* y *Ahorro*, comparando la distribución real vs. las metas estándar con gráficos de barras apiladas.
 * `graficar_evolucion_temporal()`: Visualización dual que combina el gasto diario con una **Media Móvil a 7 días (Rolling 7D)** para filtrar la volatilidad y destacar la tendencia real.
 * `graficar_distribucion_categoria()`: Donut Chart interactivo de alta legibilidad con porcentajes y montos acumulados.
 * `graficar_comparativa_persona()` y `graficar_detalle_subcategoria()`: Desglose comparativo por integrante y Treemap jerárquico.
-* `mostrar_tabla_detallada()`: Tabla de auditoría con botón de **exportación directa a CSV**.
+* `mostrar_tabla_detallada()`: Tablas de auditoría para gastos e ingresos con botón de **exportación directa a CSV**.
 
 #### 3. `utils/func_ai.py` (Inteligencia Artificial y Seguridad)
 * **Sandbox AST (`_validar_seguridad_ast`)**: Mitiga riesgos de Ejecución Remota de Código (RCE). Inspecciona el Árbol de Sintaxis Abstracta antes de cualquier cálculo en Pandas, bloqueando imports, llamadas al sistema (`os`, `sys`, `eval`, `exec`) o acceso a atributos privados (`__`).
@@ -69,7 +71,7 @@ Analisis_finanzas_personales/
 * `sugerir_categoria_ia()`: Asistente de autocompletado en el formulario de ingreso.
 
 #### 4. `utils/conn_Gsheet.py` & `utils/add_informacion.py` (Capa de Datos y CRUD)
-* **Migración a `google-auth`:** Reemplaza la biblioteca obsoleta `oauth2client` por `gspread.service_account_from_dict()`.
+* **Soporte Multi-Hoja:** Conexión y lectura de las pestañas `Hoja 1` (Gastos) e `Ingresos` mediante `google-auth`.
 * **Saneamiento de Excepciones:** Los errores técnicos se gestionan mediante el módulo estándar `logging`, evitando filtrar rutas internas o secretos en la pantalla del usuario (*Information Disclosure*).
 * **Generación de Claves Robustas:** Generación de identificadores únicos basados en timestamp y UUID.
 

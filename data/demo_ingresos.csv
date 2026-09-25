@@ -1,0 +1,86 @@
+ID_Ingreso,Fecha,Monto,Descripcion,Persona,Categoria
+ING-20260915-02,2026-09-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260915-01,2026-09-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260830-04,2026-08-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260830-03,2026-08-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260815-02,2026-08-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260815-01,2026-08-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260730-04,2026-07-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260730-03,2026-07-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260715-01,2026-07-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260715-02,2026-07-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260715-05,2026-07-15,1800.0,Gratificación / Bono extraordinario,Persona A,Bono
+ING-20260630-04,2026-06-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260630-03,2026-06-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260615-02,2026-06-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260615-01,2026-06-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260530-04,2026-05-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260530-03,2026-05-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260515-02,2026-05-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260515-01,2026-05-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260430-04,2026-04-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260430-03,2026-04-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260415-02,2026-04-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260415-01,2026-04-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260330-04,2026-03-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260330-03,2026-03-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260315-02,2026-03-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260315-01,2026-03-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260228-04,2026-02-28,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260228-03,2026-02-28,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260215-01,2026-02-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20260215-02,2026-02-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260130-04,2026-01-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20260130-03,2026-01-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20260115-02,2026-01-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20260115-01,2026-01-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20251230-04,2025-12-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20251230-03,2025-12-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20251215-01,2025-12-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20251215-05,2025-12-15,1800.0,Gratificación / Bono extraordinario,Persona A,Bono
+ING-20251215-02,2025-12-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20251130-03,2025-11-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20251130-04,2025-11-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20251115-02,2025-11-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20251115-01,2025-11-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20251030-04,2025-10-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20251030-03,2025-10-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20251015-02,2025-10-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20251015-01,2025-10-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250930-04,2025-09-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250930-03,2025-09-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250915-01,2025-09-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250915-02,2025-09-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250830-03,2025-08-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250830-04,2025-08-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250815-02,2025-08-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250815-01,2025-08-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250730-04,2025-07-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250730-03,2025-07-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250715-05,2025-07-15,1800.0,Gratificación / Bono extraordinario,Persona A,Bono
+ING-20250715-02,2025-07-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250715-01,2025-07-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250630-04,2025-06-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250630-03,2025-06-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250615-01,2025-06-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250615-02,2025-06-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250530-03,2025-05-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250530-04,2025-05-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250515-02,2025-05-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250515-01,2025-05-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250430-04,2025-04-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250430-03,2025-04-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250415-02,2025-04-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250415-01,2025-04-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250330-04,2025-03-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250330-03,2025-03-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250315-02,2025-03-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250315-01,2025-03-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250228-04,2025-02-28,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250228-03,2025-02-28,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250215-01,2025-02-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
+ING-20250215-02,2025-02-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250130-03,2025-01-30,1750.0,Cierre de mes Sueldo Persona A,Persona A,Sueldo Fijo
+ING-20250130-04,2025-01-30,1500.0,Cierre de mes Sueldo Persona B,Persona B,Sueldo Fijo
+ING-20250115-02,2025-01-15,1500.0,Adelanto / Quincena Persona B,Persona B,Sueldo Fijo
+ING-20250115-01,2025-01-15,1750.0,Adelanto / Quincena Persona A,Persona A,Sueldo Fijo
