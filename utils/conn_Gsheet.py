@@ -1,62 +1,78 @@
+import logging
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import streamlit as st
 
+logger = logging.getLogger(__name__)
+
+DEFAULT_SPREADSHEET = "FinanzasFamiliares"
+DEFAULT_WORKSHEET = "Hoja 1"
+
 def conexion_gsheet_produccion():
     """
-    Establece conexión con Google Sheets usando los Secretos de Streamlit.
-    Esta función está diseñada para ser usada exclusivamente en un entorno
-    desplegado en Streamlit Community Cloud.
+    Establece conexión con Google Sheets usando los Secretos de Streamlit
+    mediante el cliente moderno de gspread y google-auth.
     """
-    # 1. Definir el alcance de los permisos
-    scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
-             "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
-
     try:
-        # 2. Cargar las credenciales directamente desde los secretos de Streamlit
-        # st.secrets es un diccionario especial que contiene lo que configuraste en la nube.
-        creds_dict = st.secrets["gcp_service_account"]
-        
-        # 3. Autorizar usando el diccionario de credenciales
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        client = gspread.authorize(creds)
-        
+        if "gcp_service_account" not in st.secrets:
+            logger.warning("Sección [gcp_service_account] no encontrada en st.secrets.")
+            return None
+
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        # gspread.service_account_from_dict utiliza internamente google-auth (sin oauth2client obsoleto)
+        client = gspread.service_account_from_dict(creds_dict)
         return client
-        
-    except KeyError:
-        # Este error ocurre si la sección [gcp_service_account] no está en los secretos.
-        st.error("Error de configuración: La sección [gcp_service_account] no se encontró en los secretos de Streamlit.")
-        st.info("Asegúrate de haber configurado correctamente los secretos en tu dashboard de Streamlit Community Cloud.")
-        return None
+
     except Exception as e:
-        # Captura cualquier otro error durante la autorización
-        st.error(f"No se pudo conectar a Google Sheets. Error inesperado: {e}")
+        logger.error(f"Error al conectar con Google Sheets: {e}")
         return None
 
-def abrir_hoja(client):
+def abrir_hoja(client, sheet_name=None, worksheet_name=None):
     """
-    Abre una hoja de cálculo específica y devuelve el objeto de la hoja.
-    Asegúrate de que el nombre de la hoja sea correcto.
+    Abre una hoja de cálculo específica y devuelve el objeto Worksheet.
+    Permite configuración personalizada desde st.secrets o parámetros.
     """
+    if client is None:
+        return None
+
+    # Obtener nombres desde configuración opcional o defaults
+    cfg = st.secrets.get("app_config", {}) if hasattr(st, "secrets") else {}
+    target_sheet = sheet_name or cfg.get("spreadsheet_name", DEFAULT_SPREADSHEET)
+    target_worksheet = worksheet_name or cfg.get("worksheet_name", DEFAULT_WORKSHEET)
+
     try:
-        spreadsheet = client.open("FinanzasFamiliares")
-        worksheet = spreadsheet.worksheet("Hoja 1")
+        spreadsheet = client.open(target_sheet)
+        worksheet = spreadsheet.worksheet(target_worksheet)
         return worksheet
     except Exception as e:
-        print(f"Error al abrir la hoja: {e}")
+        logger.error(f"Error al abrir la hoja '{target_sheet}' / '{target_worksheet}': {e}")
         return None
 
 def cargar_datos(worksheet):
     """
-    Carga los datos de la hoja de cálculo en un DataFrame de Pandas.
+    Carga los datos de la hoja de cálculo en un DataFrame de Pandas con validación de tipos.
     """
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
-    
-    # Convertir tipos de datos
-    if not df.empty:
-        df['Monto'] = pd.to_numeric(df['Monto'], errors='coerce')
-        df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
-        df.dropna(subset=['Fecha'], inplace=True)
-    return df
+    if worksheet is None:
+        return pd.DataFrame()
+
+    try:
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+
+        if not df.empty:
+            # Asegurar columnas mínimas requeridas
+            columnas_esperadas = ['ID_Gasto', 'Fecha', 'Monto', 'Descripcion', 'Persona', 'Categoria']
+            for col in columnas_esperadas:
+                if col not in df.columns:
+                    df[col] = ""
+
+            df['Monto'] = pd.to_numeric(df['Monto'], errors='coerce').fillna(0.0)
+            df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
+            df.dropna(subset=['Fecha'], inplace=True)
+            df.sort_values(by="Fecha", ascending=False, inplace=True)
+
+        return df
+
+    except Exception as e:
+        logger.error(f"Error al leer registros de Google Sheets: {e}")
+        return pd.DataFrame()
